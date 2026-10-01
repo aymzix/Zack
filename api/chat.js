@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const apiKey = process.env.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;
+    const apiKey = process.env.NVIDIA_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
@@ -83,4 +83,4 @@ export default async function handler(req, res) {
       error: "حدث خطأ داخلي في الخادم"
     });
   }
-}
+          }
