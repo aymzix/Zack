@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "مفتاح NVIDIA API غير مضبوط على الخادم"
+        error: "NVIDIA_API_KEY غير موجود في Vercel"
       });
     }
 
@@ -26,13 +26,16 @@ export default async function handler(req, res) {
       "https://integrate.api.nvidia.com/v1/chat/completions",
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": `Bearer ${apiKey}`
         },
+
         body: JSON.stringify({
           model: "openai/gpt-oss-120b",
+
           messages: [
             {
               role: "system",
@@ -44,8 +47,9 @@ export default async function handler(req, res) {
               content: message.trim()
             }
           ],
+
           temperature: 0.6,
-          max_tokens: 4096,
+          max_tokens: 1024,
           stream: false
         })
       }
@@ -53,22 +57,27 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("NVIDIA API error:", data);
+    console.log("NVIDIA STATUS:", response.status);
+    console.log("NVIDIA RESPONSE:", JSON.stringify(data));
 
-      return res.status(response.status).json({
-        error:
+    if (!response.ok) {
+      return res.status(500).json({
+        error: `NVIDIA HTTP ${response.status}: ${
           data?.message ||
           data?.error ||
-          "حدث خطأ من NVIDIA API"
+          JSON.stringify(data)
+        }`
       });
     }
 
-    const reply = data?.choices?.[0]?.message?.content;
+    const reply =
+      data?.choices?.[0]?.message?.content;
 
     if (!reply) {
       return res.status(500).json({
-        error: "لم يصل رد من NVIDIA"
+        error:
+          "NVIDIA لم تُرجع نصًا. الرد: " +
+          JSON.stringify(data)
       });
     }
 
@@ -77,10 +86,15 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("Server error:", error);
+    console.error(
+      "SERVER ERROR:",
+      error
+    );
 
     return res.status(500).json({
-      error: "حدث خطأ داخلي في الخادم"
+      error:
+        "خطأ داخلي: " +
+        error.message
     });
   }
-          }
+}
