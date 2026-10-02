@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         },
 
         body: JSON.stringify({
-          model: "openai/gpt-oss-120b",
+          model: "openai/gpt-oss-20b",
 
           messages: [
             {
@@ -57,16 +57,25 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("NVIDIA STATUS:", response.status);
-    console.log("NVIDIA RESPONSE:", JSON.stringify(data));
+    console.log(
+      "NVIDIA STATUS:",
+      response.status
+    );
+
+    console.log(
+      "NVIDIA RESPONSE:",
+      JSON.stringify(data)
+    );
 
     if (!response.ok) {
-      return res.status(500).json({
-        error: `NVIDIA HTTP ${response.status}: ${
-          data?.message ||
-          data?.error ||
-          JSON.stringify(data)
-        }`
+      return res.status(response.status).json({
+        error:
+          `NVIDIA HTTP ${response.status}: ` +
+          (
+            data?.message ||
+            data?.error ||
+            JSON.stringify(data)
+          )
       });
     }
 
