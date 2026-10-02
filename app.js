@@ -1,124 +1,207 @@
-
 const messageInput = document.getElementById("messageInput");
 const chatForm = document.getElementById("chatForm");
 const messages = document.getElementById("messages");
 const welcome = document.getElementById("welcome");
 const historyList = document.getElementById("historyList");
-const newChatButton = document.getElementById("newChat");
+const newChatButton = document.getElementById("newChatButton");
 const themeToggle = document.getElementById("themeToggle");
 const menuButton = document.getElementById("menuButton");
 const sidebar = document.getElementById("sidebar");
 const sendButton = document.getElementById("sendButton");
 
-let conversations =
-  JSON.parse(localStorage.getItem("zack_conversations")) || [];
+const STORAGE_KEY = "zack_conversations";
 
 let currentConversation = [];
 
 
-/* =========================
-   حفظ المحادثات
-========================= */
-
-function saveConversations() {
-  localStorage.setItem(
-    "zack_conversations",
-    JSON.stringify(conversations)
-  );
-}
-
-
-/* =========================
-   عرض سجل المحادثات
-========================= */
-
-function renderHistory() {
-  historyList.innerHTML = "";
-
-  conversations.forEach((conversation, index) => {
-    const button = document.createElement("button");
-
-    button.className = "history-item";
-
-    button.textContent =
-      conversation.title || `محادثة ${index + 1}`;
-
-    button.onclick = () => loadConversation(index);
-
-    historyList.appendChild(button);
-  });
-}
-
-
-/* =========================
-   تحميل محادثة
-========================= */
-
-function loadConversation(index) {
-  const conversation = conversations[index];
-
-  currentConversation = conversation.messages || [];
-
-  messages.innerHTML = "";
-
-  welcome.style.display = "none";
-
-  currentConversation.forEach((message) => {
-    addMessageToScreen(
-      message.role,
-      message.content
-    );
-  });
-
-  sidebar.classList.remove("open");
-}
-
-
-/* =========================
-   إضافة رسالة إلى الشاشة
-========================= */
+// =========================
+// الرسائل
+// =========================
 
 function addMessageToScreen(role, content) {
   const message = document.createElement("div");
 
   message.className = `message ${role}`;
 
-  const inner = document.createElement("div");
-  inner.className = "message-inner";
+  const contentElement = document.createElement("div");
 
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
+  contentElement.className = "message-content";
 
-  avatar.textContent =
-    role === "user" ? "أنت" : "Z";
+  contentElement.textContent = content;
 
-  const text = document.createElement("div");
-  text.className = "message-content";
-
-  text.textContent = content;
-
-  inner.appendChild(avatar);
-  inner.appendChild(text);
-
-  message.appendChild(inner);
+  message.appendChild(contentElement);
 
   messages.appendChild(message);
 
-  messages.parentElement.scrollTop =
-    messages.parentElement.scrollHeight;
+  messages.scrollTop = messages.scrollHeight;
 }
 
 
-/* =========================
-   إرسال الرسالة إلى NVIDIA
-========================= */
+// =========================
+// حفظ المحادثات
+// =========================
+
+function saveCurrentConversation() {
+  if (currentConversation.length === 0) {
+    return;
+  }
+
+  let conversations = [];
+
+  try {
+    conversations =
+      JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+      ) || [];
+  } catch {
+    conversations = [];
+  }
+
+  const conversation = {
+    id: Date.now(),
+    messages: currentConversation,
+    updatedAt: new Date().toISOString()
+  };
+
+  conversations.unshift(conversation);
+
+  conversations =
+    conversations.slice(0, 50);
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(conversations)
+  );
+
+  renderHistory();
+}
+
+
+// =========================
+// عرض سجل المحادثات
+// =========================
+
+function renderHistory() {
+  if (!historyList) return;
+
+  historyList.innerHTML = "";
+
+  let conversations = [];
+
+  try {
+    conversations =
+      JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+      ) || [];
+  } catch {
+    conversations = [];
+  }
+
+  conversations.forEach((conversation) => {
+    if (
+      !conversation.messages ||
+      conversation.messages.length === 0
+    ) {
+      return;
+    }
+
+    const firstUserMessage =
+      conversation.messages.find(
+        (message) =>
+          message.role === "user"
+      );
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "history-item";
+
+    button.textContent =
+      firstUserMessage?.content ||
+      "محادثة جديدة";
+
+    button.addEventListener(
+      "click",
+      () => {
+        loadConversation(
+          conversation
+        );
+      }
+    );
+
+    historyList.appendChild(button);
+  });
+}
+
+
+// =========================
+// تحميل محادثة
+// =========================
+
+function loadConversation(conversation) {
+  currentConversation =
+    [...conversation.messages];
+
+  messages.innerHTML = "";
+
+  if (welcome) {
+    welcome.style.display = "none";
+  }
+
+  currentConversation.forEach(
+    (message) => {
+      addMessageToScreen(
+        message.role,
+        message.content
+      );
+    }
+  );
+
+  if (sidebar) {
+    sidebar.classList.remove("open");
+  }
+}
+
+
+// =========================
+// محادثة جديدة
+// =========================
+
+function startNewChat() {
+  currentConversation = [];
+
+  messages.innerHTML = "";
+
+  if (welcome) {
+    welcome.style.display = "flex";
+  }
+
+  if (messageInput) {
+    messageInput.value = "";
+    messageInput.focus();
+  }
+
+  if (sidebar) {
+    sidebar.classList.remove("open");
+  }
+}
+
+
+// =========================
+// إرسال الرسالة إلى NVIDIA
+// =========================
 
 async function sendMessage(text) {
   text = text.trim();
 
-  if (!text) return;
+  if (!text) {
+    return;
+  }
 
-  welcome.style.display = "none";
+  if (welcome) {
+    welcome.style.display = "none";
+  }
 
   addMessageToScreen(
     "user",
@@ -130,386 +213,284 @@ async function sendMessage(text) {
     content: text
   });
 
-  messageInput.value = "";
+  if (messageInput) {
+    messageInput.value = "";
+    messageInput.style.height = "auto";
+  }
 
-  messageInput.style.height = "auto";
-
-  sendButton.disabled = true;
-
-
-  /* رسالة مؤقتة */
+  if (sendButton) {
+    sendButton.disabled = true;
+  }
 
   addMessageToScreen(
     "assistant",
     "جاري التفكير..."
   );
 
-
   try {
-
-    const response = await fetch(
-      "/api/chat",
-      {
+    const response =
+      await fetch("/api/chat", {
         method: "POST",
 
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type":
+            "application/json"
         },
 
         body: JSON.stringify({
           message: text
         })
-      }
-    );
+      });
 
+    let data = {};
 
-    const data = await response.json();
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
 
-
-    /* إزالة رسالة جاري التفكير */
-
+    // حذف رسالة "جاري التفكير..."
     const assistantMessages =
       messages.querySelectorAll(
         ".message.assistant"
       );
 
-    if (assistantMessages.length > 0) {
-
+    if (
+      assistantMessages.length > 0
+    ) {
       assistantMessages[
         assistantMessages.length - 1
       ].remove();
-
     }
-
-
-    /* التحقق من الخطأ */
 
     if (!response.ok) {
-
       throw new Error(
         data.error ||
-        "حدث خطأ في الخادم"
+        `خطأ من الخادم (${response.status})`
       );
-
     }
-
 
     const reply =
       data.reply ||
       "لم يصل رد من NVIDIA.";
-
-
-    /* عرض الرد */
 
     addMessageToScreen(
       "assistant",
       reply
     );
 
-
-    /* حفظ الرد */
-
     currentConversation.push({
       role: "assistant",
       content: reply
     });
 
-
     saveCurrentConversation();
 
-
   } catch (error) {
-
     console.error(
       "Zack Error:",
       error
     );
 
-
-    /* إزالة جاري التفكير */
-
+    // حذف رسالة "جاري التفكير..."
     const assistantMessages =
       messages.querySelectorAll(
         ".message.assistant"
       );
 
-    if (assistantMessages.length > 0) {
-
+    if (
+      assistantMessages.length > 0
+    ) {
       assistantMessages[
         assistantMessages.length - 1
       ].remove();
-
     }
 
-
     const errorMessage =
-      "حدث خطأ أثناء الاتصال بـ NVIDIA API.\n\n" +
-      "تأكد من:\n" +
-      "1. تشغيل server.js\n" +
-      "2. وجود NVIDIA_API_KEY في ملف .env\n" +
-      "3. صحة مفتاح NVIDIA API";
-
+      "تعذر الاتصال بالخادم.\n\n" +
+      error.message;
 
     addMessageToScreen(
       "assistant",
       errorMessage
     );
 
-
     currentConversation.push({
       role: "assistant",
       content: errorMessage
     });
 
-
     saveCurrentConversation();
 
-
   } finally {
-
-    sendButton.disabled = false;
-
-    messageInput.focus();
-
-  }
-}
-
-
-/* =========================
-   حفظ المحادثة الحالية
-========================= */
-
-function saveCurrentConversation() {
-
-  if (
-    currentConversation.length === 0
-  ) {
-    return;
-  }
-
-
-  const firstUserMessage =
-    currentConversation.find(
-      (message) =>
-        message.role === "user"
-    );
-
-
-  const title =
-    firstUserMessage
-      ? firstUserMessage.content.slice(
-          0,
-          35
-        )
-      : "محادثة جديدة";
-
-
-  /*
-   * إذا كانت محادثة جديدة
-   */
-
-  if (
-    conversations.length === 0 ||
-    conversations[0].messages !==
-      currentConversation
-  ) {
-
-    conversations.unshift({
-      title: title,
-      messages: currentConversation
-    });
-
-  } else {
-
-    conversations[0].messages =
-      currentConversation;
-
-  }
-
-
-  saveConversations();
-
-  renderHistory();
-}
-
-
-/* =========================
-   إرسال النموذج
-========================= */
-
-chatForm.addEventListener(
-  "submit",
-  (event) => {
-
-    event.preventDefault();
-
-    sendMessage(
-      messageInput.value
-    );
-
-  }
-);
-
-
-/* =========================
-   تغيير ارتفاع مربع الكتابة
-========================= */
-
-messageInput.addEventListener(
-  "input",
-  () => {
-
-    messageInput.style.height =
-      "auto";
-
-    messageInput.style.height =
-      Math.min(
-        messageInput.scrollHeight,
-        180
-      ) + "px";
-
-  }
-);
-
-
-/* =========================
-   زر Enter
-========================= */
-
-messageInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-
-      event.preventDefault();
-
-      chatForm.requestSubmit();
-
+    if (sendButton) {
+      sendButton.disabled = false;
     }
 
+    if (messageInput) {
+      messageInput.focus();
+    }
   }
-);
+}
 
 
-/* =========================
-   محادثة جديدة
-========================= */
+// =========================
+// نموذج إرسال الرسالة
+// =========================
 
-newChatButton.addEventListener(
-  "click",
-  () => {
+if (chatForm) {
+  chatForm.addEventListener(
+    "submit",
+    async (event) => {
+      event.preventDefault();
 
-    currentConversation = [];
+      const text =
+        messageInput.value;
 
-    messages.innerHTML = "";
-
-    welcome.style.display =
-      "block";
-
-    messageInput.value = "";
-
-    messageInput.style.height =
-      "auto";
-
-    messageInput.focus();
-
-    sidebar.classList.remove(
-      "open"
-    );
-
-  }
-);
+      await sendMessage(text);
+    }
+  );
+}
 
 
-/* =========================
-   الوضع الليلي
-========================= */
+// =========================
+// Enter لإرسال الرسالة
+// Shift + Enter لسطر جديد
+// =========================
 
-themeToggle.addEventListener(
-  "click",
-  () => {
+if (messageInput) {
+  messageInput.addEventListener(
+    "keydown",
+    (event) => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
 
-    document.body.classList.toggle(
-      "dark"
-    );
+        chatForm?.requestSubmit();
+      }
+    }
+  );
 
-    const darkMode =
-      document.body.classList.contains(
+  messageInput.addEventListener(
+    "input",
+    () => {
+      messageInput.style.height =
+        "auto";
+
+      messageInput.style.height =
+        Math.min(
+          messageInput.scrollHeight,
+          200
+        ) + "px";
+    }
+  );
+}
+
+
+// =========================
+// زر محادثة جديدة
+// =========================
+
+if (newChatButton) {
+  newChatButton.addEventListener(
+    "click",
+    startNewChat
+  );
+}
+
+
+// =========================
+// الوضع الليلي
+// =========================
+
+if (themeToggle) {
+  themeToggle.addEventListener(
+    "click",
+    () => {
+      document.body.classList.toggle(
         "dark"
       );
 
-    localStorage.setItem(
-      "zack_dark_mode",
-      darkMode
-    );
-
-  }
-);
-
-
-/* =========================
-   القائمة الجانبية
-========================= */
-
-menuButton.addEventListener(
-  "click",
-  () => {
-
-    sidebar.classList.toggle(
-      "open"
-    );
-
-  }
-);
-
-
-/* =========================
-   أزرار الاقتراحات
-========================= */
-
-document
-  .querySelectorAll(
-    ".suggestions button"
-  )
-  .forEach((button) => {
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        sendMessage(
-          button.dataset.prompt
+      const isDark =
+        document.body.classList.contains(
+          "dark"
         );
 
-      }
-    );
-
-  });
-
-
-/* =========================
-   استعادة الوضع الليلي
-========================= */
-
-if (
-  localStorage.getItem(
-    "zack_dark_mode"
-  ) === "true"
-) {
-
-  document.body.classList.add(
-    "dark"
+      localStorage.setItem(
+        "zack_dark_mode",
+        isDark ? "true" : "false"
+      );
+    }
   );
-
 }
 
 
-/* =========================
-   تشغيل سجل المحادثات
-========================= */
+// =========================
+// فتح القائمة في الهاتف
+// =========================
+
+if (menuButton) {
+  menuButton.addEventListener(
+    "click",
+    () => {
+      sidebar?.classList.toggle(
+        "open"
+      );
+    }
+  );
+}
+
+
+// =========================
+// الاقتراحات
+// =========================
+
+document
+  .querySelectorAll(
+    ".suggestion"
+  )
+  .forEach((button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        const text =
+          button.textContent.trim();
+
+        if (messageInput) {
+          messageInput.value = text;
+
+          messageInput.focus();
+
+          messageInput.dispatchEvent(
+            new Event("input")
+          );
+        }
+      }
+    );
+  });
+
+
+// =========================
+// تحميل الوضع الليلي
+// =========================
+
+const savedDarkMode =
+  localStorage.getItem(
+    "zack_dark_mode"
+  );
+
+if (savedDarkMode === "true") {
+  document.body.classList.add(
+    "dark"
+  );
+}
+
+
+// =========================
+// تحميل السجل عند فتح الموقع
+// =========================
 
 renderHistory();
