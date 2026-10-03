@@ -422,3 +422,134 @@ textarea::placeholder {
     padding: 10px;
   }
 }
+/* =========================
+   زر إنشاء الصورة
+========================= */
+
+.image-button {
+  width: 38px;
+  height: 38px;
+  margin-left: 6px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: transparent;
+  color: var(--text);
+
+  font-size: 19px;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.image-button:hover {
+  background: var(--hover);
+}
+
+.image-button.active {
+  background: #111;
+  color: white;
+}
+
+
+/* =========================
+   وضع الصور
+========================= */
+
+.image-mode {
+  display: none;
+
+  max-width: 850px;
+  margin: 7px auto 0;
+
+  padding: 7px 12px;
+
+  border-radius: 8px;
+
+  background: var(--assistant);
+  color: var(--muted);
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+.image-mode.active {
+  display: block;
+}
+
+
+/* =========================
+   الصور الناتجة
+========================= */
+
+.image-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.generated-image {
+  display: block;
+
+  width: min(100%, 600px);
+
+  height: auto;
+
+  border-radius: 14px;
+
+  border: 1px solid var(--border);
+
+  box-shadow:
+    0 4px 20px
+    rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================
+   زر تنزيل الصورة
+========================= */
+
+.download-image {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 9px 13px;
+
+  border-radius: 8px;
+
+  background: var(--hover);
+
+  color: var(--text);
+
+  text-decoration: none;
+
+  font-size: 13px;
+}
+
+.download-image:hover {
+  opacity: 0.8;
+}
+
+
+/* =========================
+   الهاتف
+========================= */
+
+@media (max-width: 700px) {
+
+  .generated-image {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .image-button {
+    width: 36px;
+    height: 36px;
+  }
+
+}
