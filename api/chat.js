@@ -26,16 +26,13 @@ export default async function handler(req, res) {
       "https://integrate.api.nvidia.com/v1/chat/completions",
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": `Bearer ${apiKey}`
         },
-
         body: JSON.stringify({
           model: "openai/gpt-oss-20b",
-
           messages: [
             {
               role: "system",
@@ -47,7 +44,6 @@ export default async function handler(req, res) {
               content: message.trim()
             }
           ],
-
           temperature: 0.6,
           max_tokens: 1024,
           stream: false
@@ -56,16 +52,6 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-
-    console.log(
-      "NVIDIA STATUS:",
-      response.status
-    );
-
-    console.log(
-      "NVIDIA RESPONSE:",
-      JSON.stringify(data)
-    );
 
     if (!response.ok) {
       return res.status(response.status).json({
@@ -85,7 +71,7 @@ export default async function handler(req, res) {
     if (!reply) {
       return res.status(500).json({
         error:
-          "NVIDIA لم تُرجع نصًا. الرد: " +
+          "NVIDIA لم تُرجع نصًا: " +
           JSON.stringify(data)
       });
     }
@@ -95,15 +81,10 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error(
-      "SERVER ERROR:",
-      error
-    );
+    console.error("SERVER ERROR:", error);
 
     return res.status(500).json({
-      error:
-        "خطأ داخلي: " +
-        error.message
+      error: "خطأ داخلي: " + error.message
     });
   }
 }
