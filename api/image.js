@@ -26,74 +26,69 @@ export default async function handler(req, res) {
       "https://ai.api.nvidia.com/v1/cosmos/nvidia/cosmos3-nano",
       {
         method: "POST",
-
         headers: {
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
           "Accept": "application/json",
-          "Authorization": `Bearer ${apiKey}`
+          "Content-Type": "application/json"
         },
-
         body: JSON.stringify({
-          task: "text2image",
-
+          model_mode: "text2image",
           prompt: prompt.trim(),
-
-          seed: Math.floor(
-            Math.random() * 2147483647
-          ),
-
-          width: 1024,
-          height: 1024
+          resolution: "720_1_1",
+          seed: Math.floor(Math.random() * 2147483647)
         })
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
 
-    console.log(
-      "COSMOS STATUS:",
-      response.status
-    );
+    console.log("COSMOS STATUS:", response.status);
+    console.log("COSMOS RESPONSE:", text);
+
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      return res.status(500).json({
+        error:
+          "NVIDIA أرسلت استجابة غير صالحة JSON: " +
+          text.substring(0, 500)
+      });
+    }
 
     if (!response.ok) {
       return res.status(response.status).json({
         error:
-          `Cosmos HTTP ${response.status}: ` +
+          `NVIDIA HTTP ${response.status}: ` +
           (
             data?.message ||
+            data?.detail ||
             data?.error ||
             JSON.stringify(data)
           )
       });
     }
 
-    const image =
-      data?.b64_image ||
-      data?.image ||
-      data?.data?.[0]?.b64_image;
+    const base64Image = data?.b64_image;
 
-    if (!image) {
+    if (!base64Image) {
       return res.status(500).json({
         error:
-          "لم تُرجع Cosmos صورة. الرد: " +
-          JSON.stringify(data)
+          "لم يتم العثور على b64_image في استجابة NVIDIA: " +
+          JSON.stringify(data).substring(0, 1000)
       });
     }
 
     return res.status(200).json({
-      image: `data:image/png;base64,${image}`
+      image: `data:image/jpeg;base64,${base64Image}`
     });
 
   } catch (error) {
-    console.error(
-      "COSMOS ERROR:",
-      error
-    );
+    console.error("IMAGE SERVER ERROR:", error);
 
     return res.status(500).json({
-      error:
-        "خطأ في إنشاء الصورة: " +
-        error.message
+      error: "خطأ داخلي: " + error.message
     });
   }
 }
