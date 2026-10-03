@@ -22,57 +22,43 @@ export default async function handler(req, res) {
       });
     }
 
-    // يمكنك وضع Invocation URL الخاص بـ NVIDIA في Vercel
-    // باسم COSMOS3_API_URL إذا كان NVIDIA أعطاك عنوانًا مختلفًا.
-    const apiUrl =
-      process.env.COSMOS3_API_URL ||
-      "https://ai.api.nvidia.com/v1/cosmos/nvidia/cosmos3-nano";
+    const response = await fetch(
+      "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
+      {
+        method: "POST",
 
-    const requestBody = {
-      model_mode: "text2image",
-      prompt: prompt.trim(),
-      resolution: "720_1_1",
-      num_inference_steps: 50,
-      seed: Math.floor(Math.random() * 2147483647)
-    };
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
 
-    console.log("COSMOS URL:", apiUrl);
-    console.log("COSMOS REQUEST:", JSON.stringify(requestBody));
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBody)
-    });
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          width: 1024,
+          height: 1024,
+          mode: "base",
+          samples: 1,
+          seed: Math.floor(Math.random() * 4294967295),
+          steps: 4
+        })
+      }
+    );
 
     const responseText = await response.text();
 
-    console.log("COSMOS STATUS:", response.status);
-    console.log("COSMOS RESPONSE:", responseText);
+    console.log("NVIDIA IMAGE STATUS:", response.status);
+    console.log("NVIDIA IMAGE RESPONSE:", responseText);
 
-    let data = null;
+    let data;
 
     try {
       data = JSON.parse(responseText);
     } catch {
-      if (!response.ok) {
-        return res.status(response.status).json({
-          error:
-            `NVIDIA HTTP ${response.status}: ${responseText.substring(
-              0,
-              500
-            )}`
-        });
-      }
-
-      return res.status(500).json({
+      return res.status(response.status || 500).json({
         error:
-          "NVIDIA أرسلت استجابة غير JSON: " +
-          responseText.substring(0, 500)
+          `NVIDIA HTTP ${response.status}: ` +
+          responseText.substring(0, 1000)
       });
     }
 
@@ -89,12 +75,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const base64Image = data?.b64_image;
+    const base64Image =
+      data?.artifacts?.[0]?.base64;
 
     if (!base64Image) {
       return res.status(500).json({
         error:
-          "لم تُرجع NVIDIA صورة. الاستجابة: " +
+          "NVIDIA لم تُرجع الصورة. الرد: " +
           JSON.stringify(data).substring(0, 1500)
       });
     }
