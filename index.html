@@ -1,35 +1,64 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Zack - مساعدك الذكي</title>
-  <link rel="stylesheet" href="style.css">
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
+
   <div class="app">
 
-    <aside class="sidebar" id="sidebar">
+    <aside
+      class="sidebar"
+      id="sidebar"
+    >
+
       <div class="sidebar-top">
+
         <div class="brand">
           <div class="logo">Z</div>
           <span>Zack</span>
         </div>
 
-        <button class="new-chat" id="newChat">
+        <button
+          class="new-chat"
+          id="newChat"
+        >
           <span>＋</span>
           محادثة جديدة
         </button>
+
       </div>
 
       <div class="history">
-        <div class="history-title">المحادثات</div>
+
+        <div class="history-title">
+          المحادثات
+        </div>
+
         <div id="historyList"></div>
+
       </div>
 
       <div class="sidebar-bottom">
-        <button class="side-button" id="themeToggle">
+
+        <button
+          class="side-button"
+          id="themeToggle"
+        >
           <span>◐</span>
           الوضع الداكن
         </button>
@@ -43,59 +72,114 @@
           <span>⌘</span>
           GitHub
         </a>
+
       </div>
+
     </aside>
 
     <main class="main">
 
       <header class="topbar">
-        <button class="menu-button" id="menuButton">☰</button>
+
+        <button
+          class="menu-button"
+          id="menuButton"
+        >
+          ☰
+        </button>
 
         <div class="mobile-brand">
-          <div class="logo small">Z</div>
-          <strong>Zack</strong>
+
+          <div class="logo small">
+            Z
+          </div>
+
+          <strong>
+            Zack
+          </strong>
+
         </div>
 
-        <button class="more-button">•••</button>
+        <button class="more-button">
+          •••
+        </button>
+
       </header>
 
-      <section class="chat" id="chat">
+      <section
+        class="chat"
+        id="chat"
+      >
 
-        <div class="welcome" id="welcome">
-          <div class="welcome-logo">Z</div>
+        <div
+          class="welcome"
+          id="welcome"
+        >
 
-          <h1>مرحبًا، أنا Zack</h1>
+          <div class="welcome-logo">
+            Z
+          </div>
+
+          <h1>
+            مرحبًا، أنا Zack
+          </h1>
 
           <p>
             كيف يمكنني مساعدتك اليوم؟
           </p>
 
           <div class="suggestions">
-            <button data-prompt="اكتب لي فكرة لموقع إلكتروني">
+
+            <button
+              data-prompt="اكتب لي فكرة لموقع إلكتروني"
+            >
               💡 فكرة لموقع
             </button>
 
-            <button data-prompt="اشرح لي الذكاء الاصطناعي بطريقة بسيطة">
+            <button
+              data-prompt="اشرح لي الذكاء الاصطناعي بطريقة بسيطة"
+            >
               🧠 اشرح لي الذكاء الاصطناعي
             </button>
 
-            <button data-prompt="اكتب لي كود HTML بسيط">
+            <button
+              data-prompt="اكتب لي كود HTML بسيط"
+            >
               💻 اكتب لي كود
             </button>
 
-            <button data-prompt="ساعدني في تعلم البرمجة">
+            <button
+              data-prompt="ساعدني في تعلم البرمجة"
+            >
               📚 تعلم البرمجة
             </button>
+
           </div>
+
         </div>
 
-        <div class="messages" id="messages"></div>
+        <div
+          class="messages"
+          id="messages"
+        ></div>
 
       </section>
 
       <div class="composer-area">
 
-        <form class="composer" id="chatForm">
+        <form
+          class="composer"
+          id="chatForm"
+        >
+
+          <button
+            type="button"
+            id="imageButton"
+            class="image-button"
+            title="إنشاء صورة"
+          >
+            🎨
+          </button>
 
           <textarea
             id="messageInput"
@@ -104,21 +188,36 @@
             autocomplete="off"
           ></textarea>
 
-          <button type="submit" id="sendButton" aria-label="إرسال">
+          <button
+            type="submit"
+            id="sendButton"
+            aria-label="إرسال"
+          >
             ↑
           </button>
 
         </form>
 
+        <div
+          class="image-mode"
+          id="imageMode"
+        >
+          🎨 وضع إنشاء الصور فعال — سيتم استخدام Cosmos3 Nano
+        </div>
+
         <div class="disclaimer">
-          Zack قد يقدم معلومات غير دقيقة أحيانًا. تحقق من المعلومات المهمة.
+          Zack قد يقدم معلومات غير دقيقة أحيانًا.
+          تحقق من المعلومات المهمة.
         </div>
 
       </div>
 
     </main>
+
   </div>
 
   <script src="app.js"></script>
+
 </body>
-  </html>
+
+</html>
